@@ -1,6 +1,34 @@
 
 # Spatio-Temporal Dynamic Inference Network for Group Activity Recognition
 
+## Get Started
+Go through instructions in the original README below. You don't need to download the Collective Activity Dataset.
+
+To use gpu add ```--gpus all``` flag while initializing docker container. More instructions [here](https://stackoverflow.com/questions/25185405/using-gpu-from-a-docker-container).
+
+## Ball Position Dataset
+Thanks to Mauricio Perez, Jun Liu, Alex C. Kot. Paper: [Skeleton-based relational reasoning for group activity analysis](https://www.sciencedirect.com/science/article/abs/pii/S0031320321005409)
+
+Download the [dataset extension](https://drive.google.com/file/d/1urZpZiiepC85JD1u3VeURgUpztRgI0yl/edit) and put it in data/volleyball/videos/ball_pos
+
+(found in https://github.com/mostafa-saad/deep-activity-rec)
+
+## Start Training
+To start training, go to initial directory in docker (/opt/DIN_GAR/) and execute
+
+For training from scratch:
+```bash
+python scripts/train_volleyball_stage1.py 0
+```
+
+For training with original model already trained (insert original model to docker as /model_best.pth):
+```bash
+python scripts/train_volleyball_stage1.py 1
+```
+
+----------------------------------------------------------------------
+# Original README:
+
 The source codes for ICCV2021 Paper: 
 Spatio-Temporal Dynamic Inference Network for Group Activity Recognition.  
 [[paper]](https://openaccess.thecvf.com/content/ICCV2021/papers/Yuan_Spatio-Temporal_Dynamic_Inference_Network_for_Group_Activity_Recognition_ICCV_2021_paper.pdf)
