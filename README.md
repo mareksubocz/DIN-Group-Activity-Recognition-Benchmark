@@ -3,6 +3,8 @@
 
 Volleyball Enhanced Group Actions Specifier
 
+Basing on DIN, with addition of ball position. 
+
 _In collaboration with [Błażej Czekała](https://github.com/BlaiseCz)_
 
 ## Get Started
