@@ -1,5 +1,9 @@
 
-# Spatio-Temporal Dynamic Inference Network for Group Activity Recognition
+# VEGAS
+
+Volleyball Enhanced Group Actions Specifier
+
+_In collaboration with [Błażej Czekała](https://github.com/BlaiseCz)_
 
 ## Get Started
 Go through instructions in the original README below. You don't need to download the Collective Activity Dataset.
