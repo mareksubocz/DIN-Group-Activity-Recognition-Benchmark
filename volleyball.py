@@ -97,7 +97,7 @@ def volley_frames_around(frame, num_before=5, num_after=4):
 def load_samples_sequence(anns,tracks,images_path,frames,image_size,num_boxes=12,):
     """
     load samples of a bath
-    
+
     Returns:
         pytorch tensors
     """
@@ -106,12 +106,12 @@ def load_samples_sequence(anns,tracks,images_path,frames,image_size,num_boxes=12
     for i, (sid, src_fid, fid) in enumerate(frames):
         #img=skimage.io.imread(images_path + '/%d/%d/%d.jpg' % (sid, src_fid, fid))
         #img=skimage.transform.resize(img,(720, 1280),anti_aliasing=True)
-        
+
         img = Image.open(images_path + '/%d/%d/%d.jpg' % (sid, src_fid, fid))
-        
+
         img=transforms.functional.resize(img,image_size)
         img=np.array(img)
-        
+
         # H,W,3 -> 3,H,W
         img=img.transpose(2,0,1)
         images.append(img)
@@ -130,7 +130,7 @@ def load_samples_sequence(anns,tracks,images_path,frames,image_size,num_boxes=12
     bboxes = np.vstack(boxes).reshape([-1, num_boxes, 4])
     bboxes_idx = np.hstack(boxes_idx).reshape([-1, num_boxes])
     actions = np.hstack(actions).reshape([-1, num_boxes])
-    
+
     #convert to pytorch tensor
     images=torch.from_numpy(images).float()
     bboxes=torch.from_numpy(bboxes).float()
@@ -153,11 +153,11 @@ class VolleyballDataset(data.Dataset):
         self.image_size=image_size
         self.feature_size=feature_size
         self.inference_module_name = inference_module_name
-        
+
         self.num_boxes=num_boxes
         self.num_before=num_before
         self.num_after=num_after
-        
+
         self.is_training=is_training
         self.is_finetune=is_finetune
 
@@ -169,7 +169,7 @@ class VolleyballDataset(data.Dataset):
         Return the total number of samples
         """
         return len(self.frames)
-    
+
     def __getitem__(self,index):
         """
         Generate one sample of the dataset
@@ -183,12 +183,12 @@ class VolleyballDataset(data.Dataset):
 
         select_frames = self.volley_frames_sample(self.frames[index])
         sample = self.load_samples_sequence(select_frames)
-        
+
         return sample
-    
+
     def volley_frames_sample(self,frame):
         sid, src_fid = frame
-        
+
         if self.is_finetune:
             if self.is_training:
                 fid=random.randint(src_fid-self.num_before, src_fid+self.num_after)
@@ -227,11 +227,12 @@ class VolleyballDataset(data.Dataset):
         Returns:
             pytorch tensors
         """
-        
+
         OH, OW=self.feature_size
-        
+
         images, boxes = [], []
         activities, actions = [], []
+        ball_pos = []
         for i, (sid, src_fid, fid) in enumerate(select_frames):
 
             img = Image.open(self.images_path + '/%d/%d/%d.jpg' % (sid, src_fid, fid))
@@ -243,18 +244,21 @@ class VolleyballDataset(data.Dataset):
             img=img.transpose(2,0,1)
             images.append(img)
 
+            fid_from_0 = fid - src_fid + 20
+            ball_pos.append(np.loadtxt(self.images_path+'/ball_pos/%d/%d.txt' % (sid, src_fid))[fid_from_0])
+
             temp_boxes=np.ones_like(self.tracks[(sid, src_fid)][fid])
             for i,track in enumerate(self.tracks[(sid, src_fid)][fid]):
-                
+
                 y1,x1,y2,x2 = track
-                w1,h1,w2,h2 = x1*OW, y1*OH, x2*OW, y2*OH  
+                w1,h1,w2,h2 = x1*OW, y1*OH, x2*OW, y2*OH
                 temp_boxes[i]=np.array([w1,h1,w2,h2])
-            
+
             boxes.append(temp_boxes)
-            
-            
+
+
             actions.append(self.anns[sid][src_fid]['actions'])
-            
+
             if len(boxes[-1]) != self.num_boxes:
                 boxes[-1] = np.vstack([boxes[-1], boxes[-1][:self.num_boxes-len(boxes[-1])]])
                 actions[-1] = actions[-1] + actions[-1][:self.num_boxes-len(actions[-1])]
@@ -264,13 +268,15 @@ class VolleyballDataset(data.Dataset):
         activities = np.array(activities, dtype=np.int32)
         bboxes = np.vstack(boxes).reshape([-1, self.num_boxes, 4])
         actions = np.hstack(actions).reshape([-1, self.num_boxes])
-        
+        ball_pos = np.array(ball_pos)
+
 
         #convert to pytorch tensor
         images=torch.from_numpy(images).float()
         bboxes=torch.from_numpy(bboxes).float()
         actions=torch.from_numpy(actions).long()
         activities=torch.from_numpy(activities).long()
+        ball_pos=torch.from_numpy(ball_pos).float()
 
-        return images, bboxes,  actions, activities
-    
+        return images, bboxes,  actions, activities, ball_pos
+
