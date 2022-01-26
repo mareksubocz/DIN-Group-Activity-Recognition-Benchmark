@@ -103,7 +103,6 @@ class Config(object):
         self.halting_penalty = 0.0001
 
 
-
     def init_config(self, need_new_folder=True):
         if self.exp_name is None:
             time_str=time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
